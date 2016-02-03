@@ -1846,12 +1846,19 @@ static void homeaxis(AxisEnum axis) {
     #endif
 
     #if SERVO_LEVELING && DISABLED(Z_PROBE_SLED)
-
+      // Use the autolevling code for probing if autoleveling is enabled
       // Deploy a Z probe if there is one, and homing towards the bed
       if (axis == Z_AXIS) {
         if (axis_home_dir < 0) deploy_z_probe();
       }
+    #elif !SERVO_LEVELING && HAS_SERVO_ENDSTOPS && DISABLED(Z_PROBE_SLED)
+      // deploy the z probe if autoleveling is disabled, but there is a servo on Z, and we aren't using a sled.
+      if (axis == Z_AXIS && servo_endstop_id[axis] >= 0) {
+        if (axis_home_dir < 0) {
+          servo[servo_endstop_id[axis]].move(servo_endstop_angle[axis][0]);
+        }
 
+      }
     #endif
 
     #if HAS_SERVO_ENDSTOPS
